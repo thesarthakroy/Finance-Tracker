@@ -1,0 +1,10 @@
+{
+  "info": {"name": "Personal Finance Tracker API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+  "variable": [{"key": "baseUrl", "value": "http://localhost:8000/api"}, {"key": "accessToken", "value": ""}],
+  "item": [
+    {"name": "Register", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{baseUrl}}/register/", "body": {"mode": "raw", "raw": "{\n  \"username\": \"demo\",\n  \"email\": \"demo@example.com\",\n  \"password\": \"StrongPass123\"\n}"}}},
+    {"name": "Login", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{baseUrl}}/login/", "body": {"mode": "raw", "raw": "{\n  \"username\": \"demo\",\n  \"password\": \"StrongPass123\"\n}"}}},
+    {"name": "Transactions", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": "{{baseUrl}}/transactions/"}},
+    {"name": "Monthly report", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": "{{baseUrl}}/reports/monthly/"}}
+  ]
+}
