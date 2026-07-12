@@ -6,9 +6,10 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
+from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import RegisterSerializer, PasswordResetSerializer
@@ -56,3 +57,41 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         if not default_token_generator.check_token(user, token): return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
         user.set_password(password); user.save()
         return Response({"detail": "Password updated."})
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "date_joined": user.date_joined,
+            "last_login": user.last_login,
+        })
+
+    def put(self, request):
+        user = request.user
+        email = request.data.get("email")
+        if email:
+            if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+                return Response({"detail": "An account with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+            user.email = email
+
+        password = request.data.get("password")
+        new_password = request.data.get("new_password")
+        if password and new_password:
+            if not user.check_password(password):
+                return Response({"detail": "Incorrect old password."}, status=status.HTTP_400_BAD_REQUEST)
+            if len(new_password) < 8:
+                return Response({"detail": "New password must be at least 8 characters long."}, status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(new_password)
+
+        user.save()
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "date_joined": user.date_joined,
+            "last_login": user.last_login,
+            "detail": "Profile updated successfully."
+        })
